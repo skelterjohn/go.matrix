@@ -323,7 +323,6 @@ func MakeDenseCopy(A MatrixRO) *DenseMatrix {
 
 func MakeDenseMatrix(elements []float64, rows, cols int) *DenseMatrix {
 	A := new(DenseMatrix)
-	A.elements = make([]float64, rows*cols)
 	A.rows = rows
 	A.cols = cols
 	A.step = cols
