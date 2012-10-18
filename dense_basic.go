@@ -5,8 +5,8 @@
 package matrix
 
 import (
-	"math"
 	"errors"
+	"math"
 )
 
 func (A *DenseMatrix) Symmetric() bool {
