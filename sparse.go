@@ -148,7 +148,7 @@ func (A *SparseMatrix) GetColVector(j int) *SparseMatrix {
 Gets a reference to a row vector.
 */
 func (A *SparseMatrix) GetRowVector(i int) *SparseMatrix {
-	return A.GetMatrix(i, 0, i+1, A.cols)
+	return A.GetMatrix(i, 0, 1, A.cols)
 }
 
 /*
