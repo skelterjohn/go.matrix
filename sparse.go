@@ -105,7 +105,10 @@ func (A *SparseMatrix) Indices() (out chan int) {
 	out = make(chan int)
 	go func(o chan int) {
 		for index := range A.elements {
-			o <- index
+			i, j := A.GetRowColIndex(index)
+			if 0 <= i && i < A.rows && 0 <= j && j < A.cols {
+				o <- index
+			}
 		}
 		close(o)
 	}(out)
@@ -145,7 +148,7 @@ func (A *SparseMatrix) GetColVector(j int) *SparseMatrix {
 Gets a reference to a row vector.
 */
 func (A *SparseMatrix) GetRowVector(i int) *SparseMatrix {
-	return A.GetMatrix(i, 0, i+1, A.cols)
+	return A.GetMatrix(i, 0, 1, A.cols)
 }
 
 /*
