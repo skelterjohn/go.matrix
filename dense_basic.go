@@ -5,8 +5,8 @@
 package matrix
 
 import (
-	"math"
 	"errors"
+	"math"
 )
 
 func (A *DenseMatrix) Symmetric() bool {
@@ -89,7 +89,7 @@ func (A *DenseMatrix) Det() float64 {
 
 func (A *DenseMatrix) Trace() float64 { return sum(A.DiagonalCopy()) }
 
-func (A *DenseMatrix) OneNorm() (ε float64) {
+func (A *DenseMatrix) InfinityNorm() (ε float64) {
 	for i := 0; i < A.rows; i++ {
 		for j := 0; j < A.cols; j++ {
 			ε = max(ε, A.Get(i, j))
@@ -109,7 +109,7 @@ func (A *DenseMatrix) TwoNorm() float64 {
 	return math.Sqrt(sum)
 }
 
-func (A *DenseMatrix) InfinityNorm() (ε float64) {
+func (A *DenseMatrix) OneNorm() (ε float64) {
 	for i := 0; i < A.rows; i++ {
 		for j := 0; j < A.cols; j++ {
 			ε += A.Get(i, j)
