@@ -231,7 +231,7 @@ func (A *DenseMatrix) TimesDenseFill(B, C *DenseMatrix) (err error) {
 		err = ErrorDimensionMismatch
 		return
 	}
-	if runtime.GOMAXPROCS(0) > 1 {
+	if WhichParMethod > 0 && runtime.GOMAXPROCS(0) > 1 {
 		switch WhichParMethod {
 		case 1:
 			parTimes1(A, B, C)
