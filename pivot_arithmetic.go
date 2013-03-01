@@ -106,9 +106,11 @@ func (P *PivotMatrix) RowPivotSparse(A *SparseMatrix) (*SparseMatrix, error) {
 	}
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		si, j := A.GetRowColFromIndex(index)
-		di := P.pivots[si]
-		B.Set(di, j, value)
+		if A.IsValidIndex(index) {
+			si, j := A.GetRowColFromIndex(index)
+			di := P.pivots[si]
+			B.Set(di, j, value)
+		}
 	}
 
 	return B, nil
@@ -123,10 +125,11 @@ func (P *PivotMatrix) ColPivotSparse(A *SparseMatrix) (*SparseMatrix, error) {
 	}
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		i, sj := A.GetRowColFromIndex(index)
-		dj := P.pivots[sj]
-		B.Set(i, dj, value)
+		if A.IsValidIndex(index) {
+			i, sj := A.GetRowColFromIndex(index)
+			dj := P.pivots[sj]
+			B.Set(i, dj, value)
+		}
 	}
-
 	return B, nil
 }
