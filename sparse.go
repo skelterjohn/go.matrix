@@ -12,63 +12,30 @@ A sparse matrix based on go's map datastructure.
 type SparseMatrix struct {
 	matrix
 	elements map[int]float64
-	// offset to start of matrix s.t. idx = i*cols + j + offset
+	// offset to start of matrix s.t. idx = i*step + j + offset
 	// offset = starting row * step + starting col
 	offset int
 	// analogous to dense step
 	step int
 }
 
-func (A *SparseMatrix) Get(i, j int) float64 {
-	i = i % A.rows
-	if i < 0 {
-		i = A.rows - i
-	}
-	j = j % A.cols
-	if j < 0 {
-		j = A.cols - j
-	}
-	x, _ := A.elements[i*A.step+j+A.offset]
-	return x
+func (A *SparseMatrix) Get(i, j int) (x float64) {
+	x = A.GetIndex(A.GetIndexFromRowCol(i, j))
+	return
 }
 
 /*
 Looks up an element given its element index.
 */
 func (A *SparseMatrix) GetIndex(index int) float64 {
-	x, ok := A.elements[index]
-	if !ok {
-		return 0
-	}
+	x := A.elements[index]
 	return x
 }
 
 /*
-Turn an element index into a row number.
+Turn a row and col number into an index.
 */
-func (A *SparseMatrix) GetRowIndex(index int) (i int) {
-	i = (index - A.offset) / A.cols
-	return
-}
-
-/*
-Turn an element index into a column number.
-*/
-func (A *SparseMatrix) GetColIndex(index int) (j int) {
-	j = (index - A.offset) % A.cols
-	return
-}
-
-/*
-Turn an element index into a row and column number.
-*/
-func (A *SparseMatrix) GetRowColIndex(index int) (i int, j int) {
-	i = (index - A.offset) / A.step
-	j = (index - A.offset) % A.step
-	return
-}
-
-func (A *SparseMatrix) Set(i int, j int, v float64) {
+func (A *SparseMatrix) GetIndexFromRowCol(i, j int) (index int) {
 	i = i % A.rows
 	if i < 0 {
 		i = A.rows - i
@@ -77,12 +44,38 @@ func (A *SparseMatrix) Set(i int, j int, v float64) {
 	if j < 0 {
 		j = A.cols - j
 	}
-	// v == 0 results in removal of key from underlying map
-	if v == 0 {
-		delete(A.elements, i*A.step+j+A.offset)
-	} else {
-		A.elements[i*A.step+j+A.offset] = v
-	}
+
+	index = i*A.step + j + A.offset
+	return
+}
+
+/*
+Turn an element index into a row number.
+*/
+func (A *SparseMatrix) GetRowFromIndex(index int) (i int) {
+	i = (index - A.offset) / A.step
+	return
+}
+
+/*
+Turn an element index into a column number.
+*/
+func (A *SparseMatrix) GetColFromIndex(index int) (j int) {
+	j = (index - A.offset) % A.step
+	return
+}
+
+/*
+Turn an element index into a row and column number.
+*/
+func (A *SparseMatrix) GetRowColFromIndex(index int) (i int, j int) {
+	i = A.GetRowFromIndex(index)
+	j = A.GetColFromIndex(index)
+	return
+}
+
+func (A *SparseMatrix) Set(i, j int, v float64) {
+	A.SetIndex(A.GetIndexFromRowCol(i, j), v)
 }
 
 /*
@@ -121,13 +114,13 @@ func (A *SparseMatrix) GetMatrix(i, j, rows, cols int) (subMatrix *SparseMatrix)
 		i = maxInt(0, i)
 		j = maxInt(0, j)
 		rows = minInt(A.rows-i, rows)
-		rows = minInt(A.cols-j, cols)
+		cols = minInt(A.cols-j, cols)
 	}
 
 	subMatrix = new(SparseMatrix)
 	subMatrix.rows = rows
 	subMatrix.cols = cols
-	subMatrix.offset = (i+A.offset/A.step)*A.step + (j + A.offset%A.step)
+	subMatrix.offset = A.GetIndexFromRowCol(i, j)
 	subMatrix.step = A.step
 	subMatrix.elements = A.elements
 
@@ -145,7 +138,7 @@ func (A *SparseMatrix) GetColVector(j int) *SparseMatrix {
 Gets a reference to a row vector.
 */
 func (A *SparseMatrix) GetRowVector(i int) *SparseMatrix {
-	return A.GetMatrix(i, 0, i+1, A.cols)
+	return A.GetMatrix(i, 0, 1, A.cols)
 }
 
 /*
@@ -158,12 +151,12 @@ func (A *SparseMatrix) Augment(B *SparseMatrix) (*SparseMatrix, error) {
 	C := ZerosSparse(A.rows, A.cols+B.cols)
 
 	for index, value := range A.elements {
-		i, j := A.GetRowColIndex(index)
+		i, j := A.GetRowColFromIndex(index)
 		C.Set(i, j, value)
 	}
 
 	for index, value := range B.elements {
-		i, j := B.GetRowColIndex(index)
+		i, j := B.GetRowColFromIndex(index)
 		C.Set(i, j+A.cols, value)
 	}
 
@@ -180,12 +173,12 @@ func (A *SparseMatrix) Stack(B *SparseMatrix) (*SparseMatrix, error) {
 	C := ZerosSparse(A.rows+B.rows, A.cols)
 
 	for index, value := range A.elements {
-		i, j := A.GetRowColIndex(index)
+		i, j := A.GetRowColFromIndex(index)
 		C.Set(i, j, value)
 	}
 
 	for index, value := range B.elements {
-		i, j := B.GetRowColIndex(index)
+		i, j := B.GetRowColFromIndex(index)
 		C.Set(i+A.rows, j, value)
 	}
 
@@ -198,7 +191,7 @@ Returns a copy with all zeros above the diagonal.
 func (A *SparseMatrix) L() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		i, j := A.GetRowColIndex(index)
+		i, j := A.GetRowColFromIndex(index)
 		if i >= j {
 			B.Set(i, j, value)
 		}
@@ -212,7 +205,7 @@ Returns a copy with all zeros below the diagonal.
 func (A *SparseMatrix) U() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		i, j := A.GetRowColIndex(index)
+		i, j := A.GetRowColFromIndex(index)
 		if i <= j {
 			B.Set(i, j, value)
 		}
@@ -223,7 +216,8 @@ func (A *SparseMatrix) U() *SparseMatrix {
 func (A *SparseMatrix) Copy() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		B.elements[index] = value
+		i, j := A.GetRowColFromIndex(index)
+		B.Set(i, j, value)
 	}
 	return B
 }
@@ -266,7 +260,7 @@ Convert this sparse matrix into a dense matrix.
 func (A *SparseMatrix) DenseMatrix() *DenseMatrix {
 	B := Zeros(A.rows, A.cols)
 	for index, value := range A.elements {
-		i, j := A.GetRowColIndex(index)
+		i, j := A.GetRowColFromIndex(index)
 		B.Set(i, j, value)
 	}
 	return B
