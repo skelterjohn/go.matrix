@@ -70,8 +70,10 @@ func (A *SparseMatrix) AddSparse(B *SparseMatrix) error {
 	}
 
 	for index, value := range B.elements {
+		if (A.IsValidIndex(index)) {
 		i, j := A.GetRowColFromIndex(index)
 		A.Set(i, j, A.Get(i, j)+value)
+	}
 	}
 
 	return nil
@@ -107,8 +109,10 @@ func (A *SparseMatrix) SubtractSparse(B *SparseMatrix) error {
 	}
 
 	for index, value := range B.elements {
+		if (A.IsValidIndex(index)) {
 		i, j := A.GetRowColFromIndex(index)
 		A.Set(i, j, A.Get(i, j)-value)
+	}
 	}
 
 	return nil
