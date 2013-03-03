@@ -37,11 +37,11 @@ func (A *SparseMatrix) IsValidIndex(index int) bool {
 		return false
 	}
 
-	if index >= A.offset+A.rows*A.step {
+	if (index - A.offset) >= A.rows*A.step {
 		return false
 	}
 
-	if index%A.step >= A.cols {
+	if (index-A.offset)%A.step >= A.cols {
 		return false
 	}
 
