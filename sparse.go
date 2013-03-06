@@ -114,9 +114,10 @@ func (A *SparseMatrix) Indices() (out chan int) {
 	out = make(chan int)
 	go func(o chan int) {
 		for index := range A.elements {
-			if A.IsValidIndex(index) {
-				o <- index
+			if !A.IsValidIndex(index) {
+				continue
 			}
+			o <- index
 		}
 		close(o)
 	}(out)
@@ -171,17 +172,19 @@ func (A *SparseMatrix) Augment(B *SparseMatrix) (*SparseMatrix, error) {
 	C := ZerosSparse(A.rows, A.cols+B.cols)
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			C.Set(i, j, value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		C.Set(i, j, value)
 	}
 
 	for index, value := range B.elements {
-		if B.IsValidIndex(index) {
-			i, j := B.GetRowColFromIndex(index)
-			C.Set(i, j+A.cols, value)
+		if !B.IsValidIndex(index) {
+			continue
 		}
+		i, j := B.GetRowColFromIndex(index)
+		C.Set(i, j+A.cols, value)
 	}
 
 	return C, nil
@@ -197,17 +200,20 @@ func (A *SparseMatrix) Stack(B *SparseMatrix) (*SparseMatrix, error) {
 	C := ZerosSparse(A.rows+B.rows, A.cols)
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			C.Set(i, j, value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		C.Set(i, j, value)
+
 	}
 
 	for index, value := range B.elements {
-		if B.IsValidIndex(index) {
-			i, j := B.GetRowColFromIndex(index)
-			C.Set(i+A.rows, j, value)
+		if !B.IsValidIndex(index) {
+			continue
 		}
+		i, j := B.GetRowColFromIndex(index)
+		C.Set(i+A.rows, j, value)
 	}
 
 	return C, nil
@@ -219,11 +225,12 @@ Returns a copy with all zeros above the diagonal.
 func (A *SparseMatrix) L() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			if i >= j {
-				B.Set(i, j, value)
-			}
+		if !A.IsValidIndex(index) {
+			continue
+		}
+		i, j := A.GetRowColFromIndex(index)
+		if i >= j {
+			B.Set(i, j, value)
 		}
 	}
 	return B
@@ -235,12 +242,14 @@ Returns a copy with all zeros below the diagonal.
 func (A *SparseMatrix) U() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			if i <= j {
-				B.Set(i, j, value)
-			}
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		if i <= j {
+			B.Set(i, j, value)
+		}
+
 	}
 	return B
 }
@@ -248,10 +257,11 @@ func (A *SparseMatrix) U() *SparseMatrix {
 func (A *SparseMatrix) Copy() *SparseMatrix {
 	B := ZerosSparse(A.rows, A.cols)
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			B.Set(i, j, value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		B.Set(i, j, value)
 	}
 	return B
 }
@@ -294,10 +304,12 @@ Convert this sparse matrix into a dense matrix.
 func (A *SparseMatrix) DenseMatrix() *DenseMatrix {
 	B := Zeros(A.rows, A.cols)
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			B.Set(i, j, value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		B.Set(i, j, value)
+
 	}
 	return B
 }
@@ -306,4 +318,6 @@ func (A *SparseMatrix) SparseMatrix() *SparseMatrix {
 	return A.Copy()
 }
 
-func (A *SparseMatrix) String() string { return String(A) }
+func (A *SparseMatrix) String() string {
+	return String(A)
+}

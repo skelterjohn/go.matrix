@@ -70,10 +70,11 @@ func (A *SparseMatrix) AddSparse(B *SparseMatrix) error {
 	}
 
 	for index, value := range B.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			A.Set(i, j, A.Get(i, j)+value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		A.Set(i, j, A.Get(i, j)+value)
 	}
 
 	return nil
@@ -109,10 +110,11 @@ func (A *SparseMatrix) SubtractSparse(B *SparseMatrix) error {
 	}
 
 	for index, value := range B.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			A.Set(i, j, A.Get(i, j)-value)
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		A.Set(i, j, A.Get(i, j)-value)
 	}
 
 	return nil
@@ -135,15 +137,16 @@ func (A *SparseMatrix) Times(B MatrixRO) (Matrix, error) {
 	C := ZerosSparse(A.rows, B.Cols())
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, k := A.GetRowColFromIndex(index)
-			//not sure if there is a more efficient way to do this without using
-			//a different data structure
-			for j := 0; j < B.Cols(); j++ {
-				v := B.Get(k, j)
-				if v != 0 {
-					C.Set(i, j, C.Get(i, j)+value*v)
-				}
+		if !A.IsValidIndex(index) {
+			continue
+		}
+		i, k := A.GetRowColFromIndex(index)
+		//not sure if there is a more efficient way to do this without using
+		//a different data structure
+		for j := 0; j < B.Cols(); j++ {
+			v := B.Get(k, j)
+			if v != 0 {
+				C.Set(i, j, C.Get(i, j)+value*v)
 			}
 		}
 	}
@@ -162,15 +165,16 @@ func (A *SparseMatrix) TimesSparse(B *SparseMatrix) (*SparseMatrix, error) {
 	C := ZerosSparse(A.rows, B.Cols())
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, k := A.GetRowColFromIndex(index)
-			//not sure if there is a more efficient way to do this without using
-			//a different data structure
-			for j := 0; j < B.Cols(); j++ {
-				v := B.Get(k, j)
-				if v != 0 {
-					C.Set(i, j, C.Get(i, j)+value*v)
-				}
+		if !A.IsValidIndex(index) {
+			continue
+		}
+		i, k := A.GetRowColFromIndex(index)
+		//not sure if there is a more efficient way to do this without using
+		//a different data structure
+		for j := 0; j < B.Cols(); j++ {
+			v := B.Get(k, j)
+			if v != 0 {
+				C.Set(i, j, C.Get(i, j)+value*v)
 			}
 		}
 	}
@@ -183,9 +187,10 @@ Scale this matrix by f.
 */
 func (A *SparseMatrix) Scale(f float64) {
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			A.elements[index] = value * f
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		A.elements[index] = value * f
 	}
 }
 
@@ -216,10 +221,11 @@ func (A *SparseMatrix) ScaleMatrix(B MatrixRO) error {
 	}
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			A.Set(i, j, value*B.Get(i, j))
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		A.Set(i, j, value*B.Get(i, j))
 	}
 
 	return nil
@@ -234,10 +240,11 @@ func (A *SparseMatrix) ScaleMatrixSparse(B *SparseMatrix) error {
 	}
 
 	for index, value := range A.elements {
-		if A.IsValidIndex(index) {
-			i, j := A.GetRowColFromIndex(index)
-			A.Set(i, j, value*B.Get(i, j))
+		if !A.IsValidIndex(index) {
+			continue
 		}
+		i, j := A.GetRowColFromIndex(index)
+		A.Set(i, j, value*B.Get(i, j))
 	}
 
 	return nil
