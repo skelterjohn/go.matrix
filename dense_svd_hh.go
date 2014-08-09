@@ -6,7 +6,15 @@ import (
 	"math"
 )
 
+// Returns U, S, V such that S is diagonal and USV'=A.
+// 
+// This should work for matrices of any shape.
 func (A *DenseMatrix) SVDHH() (U, S, V *DenseMatrix, err error) {
+
+	// This version of SVD was ported from Orocos KDL (kinematics
+	// and dynamics library).  It is based on Householders
+	// rotations.
+
 	maxiter := 150
 	epsilon := 1e-300
 

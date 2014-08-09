@@ -8,6 +8,9 @@ import "math"
 
 /*
 Returns U, Σ, V st Σ is diagonal (or block diagonal) and UΣV'=Arg
+
+This does not work for matrices where m < n (the number of rows is
+less than the number of columns).
 */
 func (Arg *DenseMatrix) SVD() (theU, Σ, theV *DenseMatrix, err error) {
 	//copied from Jama
