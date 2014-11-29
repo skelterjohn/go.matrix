@@ -5,8 +5,8 @@
 package matrix
 
 import (
-	"math"
 	"errors"
+	"math"
 )
 
 func (A *DenseMatrix) Symmetric() bool {
@@ -92,7 +92,7 @@ func (A *DenseMatrix) Trace() float64 { return sum(A.DiagonalCopy()) }
 func (A *DenseMatrix) OneNorm() (ε float64) {
 	for i := 0; i < A.rows; i++ {
 		for j := 0; j < A.cols; j++ {
-			ε = max(ε, A.Get(i, j))
+			ε += math.Abs(A.Get(i, j))
 		}
 	}
 	return
@@ -102,7 +102,7 @@ func (A *DenseMatrix) TwoNorm() float64 {
 	var sum float64 = 0
 	for i := 0; i < A.rows; i++ {
 		for j := 0; j < A.cols; j++ {
-			v := A.elements[i*A.step+j]
+			v := A.Get(i, j)
 			sum += v * v
 		}
 	}
@@ -112,7 +112,7 @@ func (A *DenseMatrix) TwoNorm() float64 {
 func (A *DenseMatrix) InfinityNorm() (ε float64) {
 	for i := 0; i < A.rows; i++ {
 		for j := 0; j < A.cols; j++ {
-			ε += A.Get(i, j)
+			ε = max(ε, math.Abs(A.Get(i, j)))
 		}
 	}
 	return
