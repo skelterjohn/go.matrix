@@ -103,7 +103,7 @@ func ParseMatlab(txt string) (A *DenseMatrix, err error) {
 		}()
 
 		isNotNumber := func(c byte) bool {
-			return c != '[' || c != ']' || c == ';'
+			return c == '[' || c == ']' || c == ';'
 		}
 
 		if len(spaceSep) == 0 {
