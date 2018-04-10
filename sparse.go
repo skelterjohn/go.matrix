@@ -124,7 +124,7 @@ func (A *SparseMatrix) GetMatrix(i, j, rows, cols int) (subMatrix *SparseMatrix)
 		i = maxInt(0, i)
 		j = maxInt(0, j)
 		rows = minInt(A.rows-i, rows)
-		rows = minInt(A.cols-j, cols)
+		cols = minInt(A.cols-j, cols)
 	}
 
 	subMatrix = new(SparseMatrix)
