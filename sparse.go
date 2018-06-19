@@ -32,6 +32,10 @@ func (A *SparseMatrix) Get(i, j int) float64 {
 	return x
 }
 
+func (A *SparseMatrix) GetTuples(row int) []IndexedValue {
+	panic("not implemented")
+}
+
 /*
 Looks up an element given its element index.
 */
