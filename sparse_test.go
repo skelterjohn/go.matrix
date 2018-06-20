@@ -185,3 +185,58 @@ func TestStack_Sparse(t *testing.T) {
 		}
 	}
 }
+
+func TestGetTuples_Sparse(t *testing.T) {
+	A := NormalsSparse(4, 4, 16)
+	for row := 0; row < 4; row++ {
+		rowVals := []float64{}
+		for i := 0; i < 4; i++ {
+			val := A.Get(row, i)
+			if isNearlyZero(val) {
+				continue
+			}
+			rowVals = append(rowVals, val)
+		}
+		tuples := A.GetTuples(row)
+		if len(tuples) != len(rowVals) {
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkGetIterate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+
+	iterateOver := func(m MatrixRO) {
+		for i := 0; i < m.Rows(); i++ {
+			for j := 0; j < m.Cols(); j++ {
+				_ = m.Get(i, j)
+			}
+		}
+	}
+
+	for i := 0; i < b.N; i++ {
+		iterateOver(A)
+	}
+}
+
+func BenchmarkGetTuplesCreate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+	for i := 0; i < b.N; i++ {
+		_ = A.GetTuples(0)
+	}
+}
+
+func BenchmarkGetTuplesIterate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+	tuples := A.GetTuples(0)
+
+	iterateOver := func(t []IndexedValue) {
+		for range t {
+		}
+	}
+
+	for i := 0; i < b.N; i++ {
+		iterateOver(tuples)
+	}
+}

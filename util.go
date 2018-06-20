@@ -4,7 +4,10 @@
 
 package matrix
 
-import "runtime"
+import (
+	"math"
+	"runtime"
+)
 
 func max(x, y float64) float64 {
 	if x > y {
@@ -83,4 +86,9 @@ func parFor(inputs <-chan box, foo func(i box)) (wait func()) {
 		}
 	}
 	return
+}
+
+func isNearlyZero(f float64) bool {
+	epsilon := 1e-15
+	return math.Abs(f) < epsilon
 }
