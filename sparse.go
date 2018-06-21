@@ -4,7 +4,10 @@
 
 package matrix
 
-import "math/rand"
+import (
+	"math/rand"
+	"sort"
+)
 
 /*
 A sparse matrix based on go's map datastructure.
@@ -30,6 +33,28 @@ func (A *SparseMatrix) Get(i, j int) float64 {
 	}
 	x, _ := A.elements[i*A.step+j+A.offset]
 	return x
+}
+
+func (A *SparseMatrix) GetTuples(row int) []IndexedValue {
+	tuples := []IndexedValue{}
+	for index, value := range A.elements {
+		if isNearlyZero(value) {
+			continue
+		}
+		i, j := A.GetRowColIndex(index)
+		if i == row {
+			tuples = append(tuples, IndexedValue{Row: i, Col: j, Val: value})
+		}
+	}
+
+	sort.Slice(tuples, func(i, j int) bool {
+		if tuples[i].Row == tuples[j].Row {
+			return tuples[i].Col < tuples[j].Col
+		}
+		return tuples[i].Row < tuples[j].Row
+	})
+
+	return tuples
 }
 
 /*
