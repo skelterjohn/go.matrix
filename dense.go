@@ -72,6 +72,10 @@ func (A *DenseMatrix) Get(i int, j int) (v float64) {
 	return
 }
 
+func (A *DenseMatrix) GetTuples(row int) []IndexedValue {
+	panic("not implemented")
+}
+
 /*
 Set the element in the ith row and jth column to v.
 */

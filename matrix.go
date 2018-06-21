@@ -36,6 +36,9 @@ type MatrixRO interface {
 	//The element in the ith row and jth column.
 	Get(i, j int) float64
 
+	//The non-zero elements of given row in row-col-val tuples
+	GetTuples(row int) []IndexedValue
+
 	Plus(MatrixRO) (Matrix, error)
 	Minus(MatrixRO) (Matrix, error)
 	Times(MatrixRO) (Matrix, error)
@@ -50,6 +53,12 @@ type MatrixRO interface {
 
 	DenseMatrix() *DenseMatrix
 	SparseMatrix() *SparseMatrix
+}
+
+type IndexedValue struct {
+	Row int
+	Col int
+	Val float64
 }
 
 /*
@@ -103,7 +112,7 @@ func ParseMatlab(txt string) (A *DenseMatrix, err error) {
 		}()
 
 		isNotNumber := func(c byte) bool {
-			return c != '[' || c != ']' || c == ';'
+			return c == '[' || c == ']' || c == ';'
 		}
 
 		if len(spaceSep) == 0 {

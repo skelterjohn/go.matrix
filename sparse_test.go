@@ -6,7 +6,6 @@ package matrix
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
 )
 
@@ -64,22 +63,32 @@ func TestElementMult_Sparse(t *testing.T) {
 }
 
 func TestGetMatrix_Sparse(t *testing.T) {
-	A := ZerosSparse(6, 6)
-	for i := 0; i < 36; i++ {
-		x := rand.Intn(6)
-		y := rand.Intn(6)
-		A.Set(y, x, 1)
+	numRows := 20
+	numColumns := 20
+	A := ZerosSparse(numRows, numColumns)
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numColumns; j++ {
+			A.Set(i, j, float64(10*i+j))
+		}
 	}
-	B := A.GetMatrix(1, 1, 4, 4)
+	B := A.GetMatrix(0, numColumns/2, numRows/2, numColumns)
 
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4; j++ {
-			if B.Get(i, j) != A.Get(i+1, j+1) {
+	if B.Rows() != numRows/2 {
+		t.Log(fmt.Sprintf("wrong number of rows, expected %d, got %d", numRows/2, B.Rows()))
+		t.Fail()
+	}
+	if B.Cols() != numColumns/2 {
+		t.Log(fmt.Sprintf("wrong number of columns, expected %d, got %d", numColumns/2, B.Cols()))
+		t.Fail()
+	}
+	for i := 0; i < numRows/2; i++ {
+		for j := 0; j < numColumns/2; j++ {
+			if B.Get(i, j) != A.Get(i, j+numColumns/2) {
+				t.Log(fmt.Sprintf("wrong value in (%d,%d), expected %f, got %f", i, j, A.Get(i, j+numColumns/2), B.Get(i, j)))
 				t.Fail()
 			}
 		}
 	}
-
 }
 
 func TestAugment_Sparse(t *testing.T) {
@@ -174,5 +183,60 @@ func TestStack_Sparse(t *testing.T) {
 				t.Fail()
 			}
 		}
+	}
+}
+
+func TestGetTuples_Sparse(t *testing.T) {
+	A := NormalsSparse(4, 4, 16)
+	for row := 0; row < 4; row++ {
+		rowVals := []float64{}
+		for i := 0; i < 4; i++ {
+			val := A.Get(row, i)
+			if isNearlyZero(val) {
+				continue
+			}
+			rowVals = append(rowVals, val)
+		}
+		tuples := A.GetTuples(row)
+		if len(tuples) != len(rowVals) {
+			t.Fail()
+		}
+	}
+}
+
+func BenchmarkGetIterate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+
+	iterateOver := func(m MatrixRO) {
+		for i := 0; i < m.Rows(); i++ {
+			for j := 0; j < m.Cols(); j++ {
+				_ = m.Get(i, j)
+			}
+		}
+	}
+
+	for i := 0; i < b.N; i++ {
+		iterateOver(A)
+	}
+}
+
+func BenchmarkGetTuplesCreate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+	for i := 0; i < b.N; i++ {
+		_ = A.GetTuples(0)
+	}
+}
+
+func BenchmarkGetTuplesIterate_Sparse(b *testing.B) {
+	A := NormalsSparse(1, 100000, 16)
+	tuples := A.GetTuples(0)
+
+	iterateOver := func(t []IndexedValue) {
+		for range t {
+		}
+	}
+
+	for i := 0; i < b.N; i++ {
+		iterateOver(tuples)
 	}
 }

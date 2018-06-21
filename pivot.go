@@ -29,6 +29,10 @@ func (P *PivotMatrix) Get(i, j int) float64 {
 	return 0
 }
 
+func (P *PivotMatrix) GetTuples(row int) []IndexedValue {
+	panic("not implemented")
+}
+
 /*
 Convert this PivotMatrix into a DenseMatrix.
 */
