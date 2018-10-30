@@ -35,7 +35,7 @@ func (A *DenseMatrix) Arrays() [][]float64 {
 Returns the contents of this matrix stored into a flat array (row-major).
 */
 func (A *DenseMatrix) Array() []float64 {
-	if A.step == A.rows {
+	if A.step == A.cols {
 		return A.elements[0 : A.rows*A.cols]
 	}
 	a := make([]float64, A.rows*A.cols)
